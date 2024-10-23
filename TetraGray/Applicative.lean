@@ -1,0 +1,1 @@
+-- Lean already has Applicative, so we don't need to implement it.

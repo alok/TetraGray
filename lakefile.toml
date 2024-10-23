@@ -1,0 +1,10 @@
+name = "TetraGray"
+version = "0.1.0"
+defaultTargets = ["tetragray"]
+
+[[lean_lib]]
+name = "TetraGray"
+
+[[lean_exe]]
+name = "tetragray"
+root = "Main"

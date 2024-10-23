@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "MLTable": "yaml",
+        ".cursorrules": "plaintext",
+        "utility": "cpp",
+        "functional": "cpp"
+    }
+}

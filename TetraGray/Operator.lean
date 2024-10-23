@@ -1,0 +1,1 @@
+-- Lean already has currying so no need. This file is just to make the port more straighforward.

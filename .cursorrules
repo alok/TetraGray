@@ -1,0 +1,47 @@
+The goal is to port `tetra-gray` to Lean.
+
+Start with all the files that are supposed to replicate functional programming features like monads.
+
+
+# output of `tree tetra-gray/`
+tetra-gray/
+├── [ ] README.md # irrelevant
+├── [x] SConstruct # irrelevant
+├── [ ] clifford-static.cuh
+├── [ ] clifford.cuh
+├── [ ] coord_systems.cuh
+├── [ ] doran.cu
+├── [ ] flat.cu
+├── [ ] image.cu
+├── [ ] image.cuh
+├── [ ] image_id.cuh
+├── [x] images
+│   ├── [x] doran.png
+│   └── [x] flat.png
+├── [ ] integrator.cuh
+├── [x] libftk
+│   ├── [x] SConstruct
+│   ├── [x] applicative.h
+│   ├── [x] cutest
+│   ├── [x] functor.h # lean already has this
+│   ├── [x] identity.h # lean already has this
+│   ├── [x] libftk-cutest.cu 
+│   ├── [x] libftk-test.cc # irrelevant, tests currying 
+│   ├── [x] list.h # lean already has this
+│   ├── [x] monad.h # lean already has this
+│   ├── [x] operator.h # lean already has this
+│   ├── [x] parameterized.h # lean already has this
+│   ├── [x] procedure.h # lean already has this
+│   ├── [x] test
+│   └── [x] test.txt
+├── [x] operator.cuh # irrelevant, lean has this, same as in libftk
+├── [ ] orientation.cuh
+├── [ ] particle.cuh
+├── [ ] raytracer.cuh
+├── [ ] rhs.cuh
+├── [ ] stepsize.cuh
+├── [ ] test.cu
+├── [ ] test.cuh
+├── [ ] test.txt
+├── [ ] thrustlist.cuh
+└── [ ] types.cuh
