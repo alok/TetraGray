@@ -8,3 +8,8 @@ name = "TetraGray"
 [[lean_exe]]
 name = "tetragray"
 root = "Main"
+
+# [[require]]
+# name = "llm.lean"
+# git = "https://github.com/alok/llm.lean"
+# rev = "main"
