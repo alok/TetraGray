@@ -29,8 +29,16 @@ structure Vec4 where
   y : Float := 0
   /-- Z component -/
   z : Float := 0
+deriving Repr, BEq, Inhabited
 
-  deriving Repr, BEq, Inhabited
+/--space basis vector-/
+def x :Vec4 := { x:=1 }
+/--space basis vector-/
+def y :Vec4 := { y := 1 }
+/--space basis vector-/
+def z :Vec4 := { z:=1 }
+/--time basis vector-/
+def t : Vec4 := { t:=1 }
 
 /-- A bivector in 4D space -/
 structure Bivec4 where
@@ -46,7 +54,7 @@ structure Bivec4 where
   xz : Float := 0
   /-- Y-Z plane component -/
   yz : Float := 0
-  deriving Repr, BEq, Inhabited
+deriving Repr, BEq, Inhabited
 
 
 
@@ -313,13 +321,12 @@ def TEST_YS : Multivector4 := { vector := { t := 5, x := 6, y := 7, z := 8 } }
 
 
 
+#eval x ⋅ y
+#eval x ∧ y
 
 
-instance : GetElem (NumericalArray α length) Nat α (fun _ i => i < length) where
-  --TODO use that xs.values.size = length for proof that index is valid
-  getElem xs i h := xs.values[i]'sorry
 
-#eval! TEST_XS[2]
+
 
 /-- Factorial, evaluated naively -/
 def factorial (n : Nat) : Nat :=
