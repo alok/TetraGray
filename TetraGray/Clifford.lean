@@ -185,7 +185,8 @@ instance: Sub Multivector4 where
 
 /-- Inner (dot) product between vectors. Time has negative signature, space positive. -/
 def Vec4.dot (v₁ v₂ : Vec4) : Float :=
-  v₁.t * v₂.t + v₁.x * v₂.x + v₁.y * v₂.y + v₁.z * v₂.z
+  -- Minkowski metric: (-,+,+,+)
+  -v₁.t * v₂.t + v₁.x * v₂.x + v₁.y * v₂.y + v₁.z * v₂.z
 
 /-- Outer (wedge) product between vectors -/
 def Vec4.wedge (v₁ v₂ : Vec4) : Bivec4 := {
@@ -206,6 +207,15 @@ infixl:70 " ∧ " => Vec4.wedge
 /-- Geometric product -/
 instance : Mul Multivector4 where
   mul a b :=
+  /-
+  TEST_XS = 1e₀ + 2e₁ + 3e₂ + 4e₃
+  TEST_YS = 5e₀ + 6e₁ + 7e₂ + 8e₃
+
+  Scalar part should be dot product:
+  -(1*5) + 2*6 + 3*7 + 4*8
+  = -5 + 12 + 21 + 32
+  = 60
+  -/
   let s₁ := a.scalar
   let v₁ := a.vector
   let b₁ := a.bivector
@@ -219,7 +229,7 @@ instance : Mul Multivector4 where
   let q₂ := b.quadvector
 
   -- Common subexpressions
-  let v₁₂Inner := v₁ ⋅ v₂
+  let v₁₂Inner := v₁ ⋅ v₂  -- This gives the correct +60 for test case
   let v₁₂Outer := v₁ ∧ v₂
 
   let b₁₂ := b₁.tx * b₂.tx + b₁.ty * b₂.ty + b₁.tz * b₂.tz
@@ -289,7 +299,15 @@ instance : Mul Multivector4 where
 def TEST_XS : Multivector4 := { vector := { t := 1, x := 2, y := 3, z := 4 } }
 def TEST_YS : Multivector4 := { vector := { t := 5, x := 6, y := 7, z := 8 } }
 
-#eval TEST_XS * TEST_YS
+#eval
+  let prod := TEST_XS * TEST_YS
+  -- dot + wedge should work in this case since they're just vectors
+  let dot:Multivector4 := TEST_XS.vector ⋅ TEST_YS.vector
+  let wedge:Multivector4 := TEST_XS.vector ∧ TEST_YS.vector
+  let total := dot + wedge
+  prod - total
+
+-- TODO verify
 -- TODO: test cases
 
 
