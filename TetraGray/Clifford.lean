@@ -1,3 +1,5 @@
+import TetraGray.Basic
+-- import Mathlib.Group.Init.ZeroOne
 
 def _root_.Array.replicate {a : Type} (length : Nat) (default : a) : Array a :=
   Array.mk (List.replicate length default)
@@ -12,82 +14,285 @@ structure NumericalArray (a : Type := Float) (length : Nat) where
   _pf_length : values.size = length := by sorry
   deriving Repr
 
-namespace NumericalArray
 
-/-- Convert array to string representation -/
-def toString {a : Type} [ToString a] (xs : NumericalArray a length) : String := Id.run do
-  if xs.values.size = 0 then
-    return "[]"
-  else
-    let mut acc := ""
-    for x in xs.values do
-      acc := s!"{acc}{x}, "
-    -- remove trailing comma and space
-    acc := acc.dropRight 2
-    return s!"[{acc}]"
 
-instance [ToString a] (length : Nat) : ToString (NumericalArray a length) where
-  toString xs := xs.toString
 
-/-- Empty Array always has default -/
-instance : Inhabited (NumericalArray a 0) where
-  default := { values := #[], _pf_length := by rfl }
+namespace TetraGray
 
-/-- Array with all elements default -/
-instance [Inhabited a] (length : Nat) : Inhabited (NumericalArray a length) where
-  default := { values := Array.replicate length default}
+/-- A vector in 4D space -/
+structure Vec4 where
+  /-- Time component -/
+  t : Float := 0
+  /-- X component -/
+  x : Float := 0
+  /-- Y component -/
+  y : Float := 0
+  /-- Z component -/
+  z : Float := 0
 
-#eval! (default : NumericalArray Float 3).toString
+  deriving Repr, BEq, Inhabited
 
-/-- Map over the array with index -/
-def mapIdx {a b : Type} (f : Nat → a → b) (xs : NumericalArray a length) : NumericalArray b length :=
-  { values := xs.values.mapIdx f}
+/-- A bivector in 4D space -/
+structure Bivec4 where
+  /-- Time-X plane component -/
+  tx : Float := 0
+  /-- Time-Y plane component -/
+  ty : Float := 0
+  /-- Time-Z plane component -/
+  tz : Float := 0
+  /-- X-Y plane component -/
+  xy : Float := 0
+  /-- X-Z plane component -/
+  xz : Float := 0
+  /-- Y-Z plane component -/
+  yz : Float := 0
+  deriving Repr, BEq, Inhabited
 
-/-- Map over the array -/
-def map {a b : Type} (f : a → b) (xs : NumericalArray a length) : NumericalArray b length :=
-  { values := xs.values.map f}
 
-instance : Functor (NumericalArray · length) where
-  map f xs := xs.map f
 
-def TEST_XS : NumericalArray Float 4 := NumericalArray.mk #[1.0, 2.0, 3.0, 4.0]
-def TEST_YS : NumericalArray Float 4 := NumericalArray.mk #[4.0, 5.0, 6.0, 7.0]
+-- TODO use girving's floating library for ord and stuff
 
-#eval! TEST_XS.map (· + 1.0)
+/-- A trivector in 4D space -/
+structure Trivec4 where
+  txy : Float := 0
+  txz : Float := 0
+  tyz : Float := 0
+  xyz : Float := 0
+deriving Repr, BEq, Inhabited --, Ord
 
-/-- Zip with another array using the provided function -/
-def zipWith (f : a → b → c) (xs : NumericalArray a length) (ys : NumericalArray b length) : NumericalArray c length := Id.run do
-  let mut zs := Array.mkEmpty xs.values.size
-  for (x,y) in xs.values.zip ys.values do
-    zs := zs.push (f x y)
-  { values := zs}
+structure Quadvec4 where
+  txyz : Float := 0
+deriving Repr, BEq, Inhabited
 
-instance {a : Type} [Add a] (length : Nat) : Add (NumericalArray a length) where
-  add a b := a.zipWith (· + ·) b
+structure Multivector4 where
+  scalar : Float := 0
+  vector : Vec4 := default
+  bivector : Bivec4 := default
+  trivector : Trivec4 := default
+  quadvector : Quadvec4 := default
+deriving Repr, BEq, Inhabited
 
-#eval! TEST_XS + TEST_YS
+instance : OfNat Vec4 0 where
+  ofNat := default
+
+instance : OfNat Bivec4 0 where
+  ofNat := default
+
+instance : OfNat Trivec4 0 where
+  ofNat := default
+
+instance : OfNat Quadvec4 0 where
+  ofNat := default
+
+instance : OfNat Multivector4 0 where
+  ofNat := default
+
+instance : Coe Float Multivector4 where
+  coe s := { scalar := s}
+instance : Coe Vec4 Multivector4 where
+  coe v := { vector := v}
+instance : Coe Bivec4 Multivector4 where
+  coe b := { bivector := b}
+instance : Coe Trivec4 Multivector4 where
+  coe t := { trivector := t}
+instance : Coe Quadvec4 Multivector4 where
+  coe q := { quadvector := q}
+
+/-- A point in 4D space -/
+structure Point4 where
+  coords : Vec4 := default
+deriving Repr, BEq, Inhabited
+
+/-- A direction in 4D space -/
+structure Dir4 where
+  vec : Vec4 := default
+deriving Repr, BEq, Inhabited
+
+/-- RGB color representation -/
+structure Color where
+  /-- Red component -/
+  r : Float := 0
+  /-- Green component -/
+  g : Float := 0
+  /-- Blue component -/
+  b : Float := 0
+  deriving Repr, BEq, Inhabited
+
+
+/-- ZipWith for Vec4 -/
+def Vec4.zipWith (f : Float → Float → Float) (v1 v2 : Vec4) : Vec4 :=
+  { t := f v1.t v2.t, x := f v1.x v2.x, y := f v1.y v2.y, z := f v1.z v2.z }
+
+/-- ZipWith for Bivec4 -/
+def Bivec4.zipWith (f : Float → Float → Float) (b1 b2 : Bivec4) : Bivec4 :=
+  { tx := f b1.tx b2.tx, ty := f b1.ty b2.ty, tz := f b1.tz b2.tz,
+    xy := f b1.xy b2.xy, xz := f b1.xz b2.xz, yz := f b1.yz b2.yz }
+
+/-- ZipWith for Trivec4 -/
+def Trivec4.zipWith (f : Float → Float → Float) (t1 t2 : Trivec4) : Trivec4 :=
+  { txy := f t1.txy t2.txy, txz := f t1.txz t2.txz,
+    tyz := f t1.tyz t2.tyz, xyz := f t1.xyz t2.xyz }
+
+/-- ZipWith for Quadvec4 -/
+def Quadvec4.zipWith (f : Float → Float → Float) (q1 q2 : Quadvec4) : Quadvec4 :=
+  { txyz := f q1.txyz q2.txyz }
+
+def Multivector4.zipWith (f : Float → Float → Float) (m1 m2 : Multivector4) : Multivector4 :=
+  { scalar := f m1.scalar m2.scalar, vector := m1.vector.zipWith f m2.vector, bivector := m1.bivector.zipWith f m2.bivector, trivector := m1.trivector.zipWith f m2.trivector, quadvector := m1.quadvector.zipWith f m2.quadvector }
+
+/-- Map for Vec4 -/
+def Vec4.map (f : Float → Float) (v : Vec4) : Vec4 :=
+  { t := f v.t, x := f v.x, y := f v.y, z := f v.z }
+
+/-- Map for Bivec4 -/
+def Bivec4.map (f : Float → Float) (b : Bivec4) : Bivec4 :=
+  { tx := f b.tx, ty := f b.ty, tz := f b.tz,
+    xy := f b.xy, xz := f b.xz, yz := f b.yz }
+
+/-- Map for Trivec4 -/
+def Trivec4.map (f : Float → Float) (t : Trivec4) : Trivec4 :=
+  { txy := f t.txy, txz := f t.txz,
+    tyz := f t.tyz, xyz := f t.xyz }
+
+/-- Map for Quadvec4 -/
+def Quadvec4.map (f : Float → Float) (q : Quadvec4) : Quadvec4 :=
+  { txyz := f q.txyz }
+
+/-- Map a function over a Multivector4 -/
+def Multivector4.map (f : Float → Float) (m : Multivector4) : Multivector4 :=
+  { scalar := f m.scalar, vector := m.vector.map f, bivector := m.bivector.map f, trivector := m.trivector.map f, quadvector := m.quadvector.map f }
 
 /-- Scalar multiplication on the left -/
-instance [HMul scalar α α] : HMul scalar (NumericalArray α length) (NumericalArray α length) where
+instance [HMul scalar Float Float] : HMul scalar Multivector4 Multivector4 where
   hMul a v := v.map (a * ·)
 
 /-- Scalar multiplication on the right -/
-instance [HMul α scalar α] : HMul (NumericalArray α length) scalar (NumericalArray α length) where
+instance [HMul Float scalar Float] : HMul Vec4 scalar Vec4 where
   hMul v a := v.map (· * a)
 
-instance [Neg α] (length : Nat) : Neg (NumericalArray α length) where
-  neg a := a.map Neg.neg
+/-- Scalar division is only defined on the right to avoid any ambiguity about what it means -/
+instance [HDiv Float scalar Float] : HDiv Multivector4 scalar Multivector4 where
+  hDiv m a := m.map (· / a)
 
-instance [Add α] [Neg α] : Sub (NumericalArray α length) where
+instance : Neg Multivector4 where
+  neg m := m.map Neg.neg
+
+instance : Add Multivector4 where
+  add a b := a.zipWith (· + ·) b
+
+instance: Sub Multivector4 where
   sub a b := a + (-b)
 
-#eval! TEST_XS - TEST_YS
+/-- Inner (dot) product between vectors. Time has negative signature, space positive. -/
+def Vec4.dot (v₁ v₂ : Vec4) : Float :=
+  v₁.t * v₂.t + v₁.x * v₂.x + v₁.y * v₂.y + v₁.z * v₂.z
 
-/-- Scalar division is only defined on the right to avoid any ambiguity about what it means -/
-instance [HDiv α scalar α] : HDiv (NumericalArray α length) scalar (NumericalArray α length) where
-  hDiv xs a := xs.map (· / a)
+/-- Outer (wedge) product between vectors -/
+def Vec4.wedge (v₁ v₂ : Vec4) : Bivec4 := {
+  tx := v₁.t * v₂.x - v₁.x * v₂.t,
+  ty := v₁.t * v₂.y - v₁.y * v₂.t,
+  tz := v₁.t * v₂.z - v₁.z * v₂.t,
+  xy := v₁.x * v₂.y - v₁.y * v₂.x,
+  xz := v₁.x * v₂.z - v₁.z * v₂.x,
+  yz := v₁.y * v₂.z - v₁.z * v₂.y
+}
 
-#eval! TEST_XS / 2.0
+/-- Dot product operator -/
+infixl:70 " ⋅ " => Vec4.dot
+
+/-- Wedge product operator -/
+infixl:70 " ∧ " => Vec4.wedge
+
+/-- Geometric product -/
+instance : Mul Multivector4 where
+  mul a b :=
+  let s₁ := a.scalar
+  let v₁ := a.vector
+  let b₁ := a.bivector
+  let t₁ := a.trivector
+  let q₁ := a.quadvector
+
+  let s₂ := b.scalar
+  let v₂ := b.vector
+  let b₂ := b.bivector
+  let t₂ := b.trivector
+  let q₂ := b.quadvector
+
+  -- Common subexpressions
+  let v₁₂Inner := v₁ ⋅ v₂
+  let v₁₂Outer := v₁ ∧ v₂
+
+  let b₁₂ := b₁.tx * b₂.tx + b₁.ty * b₂.ty + b₁.tz * b₂.tz
+             + b₁.xy * b₂.xy + b₁.xz * b₂.xz + b₁.yz * b₂.yz
+
+  let t₁₂ := t₁.txy * t₂.txy + t₁.txz * t₂.txz + t₁.tyz * t₂.tyz + t₁.xyz * t₂.xyz
+
+  -- Scalar part
+  let scalar := s₁ * s₂ + v₁₂Inner + b₁₂ + t₁₂ + q₁.txyz * q₂.txyz
+
+  -- Vector part common terms
+  let v_b₁v₂ := (b₁.tx * v₂.x + b₁.ty * v₂.y + b₁.tz * v₂.z)
+  let v_v₁b₂ := (v₁.x * b₂.tx + v₁.y * b₂.ty + v₁.z * b₂.tz)
+
+  let vector := {
+    t := s₁ * v₂.t + v₁.t * s₂ + v_b₁v₂ + v_v₁b₂,
+    x := s₁ * v₂.x + v₁.x * s₂ + (b₁.tx * v₂.t + b₁.xy * v₂.y + b₁.xz * v₂.z)
+         + (v₁.t * b₂.tx + v₁.y * b₂.xy + v₁.z * b₂.xz),
+    y := s₁ * v₂.y + v₁.y * s₂ + (b₁.ty * v₂.t - b₁.xy * v₂.x + b₁.yz * v₂.z)
+         + (v₁.t * b₂.ty - v₁.x * b₂.xy + v₁.z * b₂.yz),
+    z := s₁ * v₂.z + v₁.z * s₂ + (b₁.tz * v₂.t - b₁.xz * v₂.x - b₁.yz * v₂.y)
+         + (v₁.t * b₂.tz - v₁.x * b₂.xz - v₁.y * b₂.yz)
+  }
+
+  -- Bivector part
+  let bivector := {
+    tx := s₁ * b₂.tx + b₁.tx * s₂ + v₁₂Outer.tx,
+    ty := s₁ * b₂.ty + b₁.ty * s₂ + v₁₂Outer.ty,
+    tz := s₁ * b₂.tz + b₁.tz * s₂ + v₁₂Outer.tz,
+    xy := s₁ * b₂.xy + b₁.xy * s₂ + v₁₂Outer.xy,
+    xz := s₁ * b₂.xz + b₁.xz * s₂ + v₁₂Outer.xz,
+    yz := s₁ * b₂.yz + b₁.yz * s₂ + v₁₂Outer.yz
+  }
+
+  -- Trivector part common terms
+  let t_v₁b₂_xy := v₁.t * b₂.xy - v₁.x * b₂.ty + v₁.y * b₂.tx
+  let t_b₁v₂_xy := b₁.xy * v₂.t - b₁.ty * v₂.x + b₁.tx * v₂.y
+
+  let trivector := {
+    txy := s₁ * t₂.txy + t₁.txy * s₂ + t_v₁b₂_xy + t_b₁v₂_xy,
+    txz := s₁ * t₂.txz + t₁.txz * s₂
+           + (v₁.t * b₂.xz - v₁.x * b₂.tz + v₁.z * b₂.tx)
+           + (b₁.xz * v₂.t - b₁.tz * v₂.x + b₁.tx * v₂.z),
+    tyz := s₁ * t₂.tyz + t₁.tyz * s₂
+           + (v₁.t * b₂.yz - v₁.y * b₂.tz + v₁.z * b₂.ty)
+           + (b₁.yz * v₂.t - b₁.tz * v₂.y + b₁.ty * v₂.z),
+    xyz := s₁ * t₂.xyz + t₁.xyz * s₂
+           + (v₁.x * b₂.yz - v₁.y * b₂.xz + v₁.z * b₂.xy)
+           + (b₁.yz * v₂.x - b₁.xz * v₂.y + b₁.xy * v₂.z)
+  }
+
+  -- Quadvector part common terms
+  let q_v₁t₂ := v₁.t * t₂.xyz - v₁.x * t₂.tyz + v₁.y * t₂.txz - v₁.z * t₂.txy
+  let q_t₁v₂ := t₁.xyz * v₂.t - t₁.tyz * v₂.x + t₁.txz * v₂.y - t₁.txy * v₂.z
+
+  let quadvector := {
+    txyz := s₁ * q₂.txyz + q₁.txyz * s₂ + q_v₁t₂ + q_t₁v₂
+  }
+
+  { scalar := scalar
+    vector := vector
+    bivector := bivector
+    trivector := trivector
+    quadvector := quadvector }
+
+
+def TEST_XS : Multivector4 := { vector := { t := 1, x := 2, y := 3, z := 4 } }
+def TEST_YS : Multivector4 := { vector := { t := 5, x := 6, y := 7, z := 8 } }
+
+#eval TEST_XS * TEST_YS
+-- TODO: test cases
+
+
 
 
 
