@@ -54,7 +54,7 @@ structure Image where
 
 /-- Create a black image of given dimensions -/
 def Image.black (w h : Nat) : Image :=
-  let data := Array.mkArray (w * h) (0 : RGB)
+  let data := Array.replicate (w * h) (0 : RGB)
   ⟨w, h, data⟩
 
 /-- Get pixel at position -/

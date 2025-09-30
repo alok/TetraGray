@@ -20,7 +20,7 @@ structure Image where
   data : Array RGB
 
 def Image.black (w h : Nat) : Image :=
-  let data := Array.mkArray (w * h) (0 : RGB)
+  let data := Array.replicate (w * h) (0 : RGB)
   ⟨w, h, data⟩
 
 def Image.getPixel (img : Image) (x y : Nat) : RGB :=

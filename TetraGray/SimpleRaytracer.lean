@@ -1,8 +1,8 @@
-import TetraGray.PPMTest
+import TetraGray.Image
 
 namespace SimpleRaytracer
 
-open PPMTest
+open Image
 
 /-- A 3D vector -/
 structure Vec3 where

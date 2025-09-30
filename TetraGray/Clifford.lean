@@ -1,25 +1,17 @@
 set_option relaxedAutoImplicit false
 
-/-- Replicate an element `n` times -/
-def _root_.Array.replicate {a : Type} (n : Nat) (default : a) : Array a :=
-  Array.mk (List.replicate n default)
-
 namespace MultiVector
 
 -- TODO import array comprehension
-
-/-- Replicate an element `n` times -/
-def _root_.Vector.replicate {a : Type} (n : Nat) (default : a) : Vector a n :=
-  Vector.mk (Array.mkArray n default) (by simp)
 
 /-- Fix Vector.set to handle setting values of type α -/
 def _root_.Vector.setVal {α : Type u} {n : Nat} (v : Vector α n) (i : Nat) (x : α) : Vector α n :=
   if h : i < n then Vector.set v i x h else v
 
 instance [Zero a] : Zero (Vector a n) where
-  zero := Vector.replicate n 0
+  zero := ⟨Array.replicate n 0, by simp [Array.size_replicate]⟩
 
-#eval! (Vector.replicate 3 0 : Vector Int 3)
+#eval! (⟨Array.replicate 3 0, by simp⟩ : Vector Int 3)
 
 def _root_.Nat.factorial (n : Nat) : Nat :=
   match n with
@@ -414,7 +406,9 @@ structure Versor (α : Type u) where
 namespace Versor
 
 /-- Create a versor from just a scalar value -/
-def fromScalar [Zero α] (s : α) : Versor α := ⟨Vector.replicate 8 0 |>.set 0 s⟩
+def fromScalar [Zero α] (s : α) : Versor α :=
+  let vec : Vector α 8 := ⟨Array.replicate 8 0, by simp [Array.size_replicate]⟩
+  ⟨vec.set 0 s⟩
 
 /-- Create a versor from just a bivector -/
 def fromBivector [Zero α] (b : Bivector α) : Versor α :=
@@ -426,7 +420,7 @@ def makePseudoscalar [Zero α] (p : α) : Versor α :=
 
 /-- Extract the bivector part of a versor -/
 def bivectorPart [Zero α] (v : Versor α) : Bivector α :=
-  let bv := Vector.replicate 6 (0:α)
+  let bv : Bivector α := ⟨Array.replicate 6 (0:α), by simp [Array.size_replicate]⟩
   let bv := bv.set 0 v.components[1]
   let bv := bv.set 1 v.components[2]
   let bv := bv.set 2 v.components[3]
