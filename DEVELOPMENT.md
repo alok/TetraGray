@@ -135,9 +135,19 @@ brew install imagemagick  # if not using sips
 4. **Multivectors**: Use `#eval!` to test multivector operations
 5. **Performance**: Compile with `lake build` for production runs
 
+## C++ Parity Status
+
+See [CPP_PARITY.md](CPP_PARITY.md) for a detailed comparison between the C++ CUDA
+implementation and the Lean 4 port. This tracks:
+- Completed features (~90% of core Clifford algebra)
+- Missing features (dynamic stepsize, stop conditions, colormaps)
+- Test suite status
+- Performance expectations
+
 ## References
 
 - [Lean 4 Reference Manual](https://lean-lang.org/doc/reference/latest/)
 - [Grind Tactic](https://lean-lang.org/doc/reference/latest/The--grind--tactic/)
 - [Geometric Algebra Resources](http://geocalc.clas.asu.edu/)
 - [Doran & Lasenby - Geometric Algebra for Physicists](https://www.cambridge.org/core/books/geometric-algebra-for-physicists/)
+- [Original C++ CUDA Implementation](tetra-gray/README.md)
