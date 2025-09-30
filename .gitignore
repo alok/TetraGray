@@ -1,1 +1,8 @@
 /.lake
+build
+
+# Generated images
+*.ppm
+*.png
+sphere_render.*
+gradient_test.*
