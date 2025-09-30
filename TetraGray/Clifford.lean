@@ -311,22 +311,30 @@ infixl:75 " ∧ " => MV4.wedge
 /-- Dual operation on multivectors -/
 def MV4.dual {α : Type u} [Mul α] [Sub α] [Add α] [Zero α] [Neg α] (mv : MV4 α) : MV4 α :=
   #v[mv.xyzt,
-     -mv.yzt, mv.xzt, -mv.xyz,
-     mv.xyt,
-     -mv.zt, mv.yt, -mv.xt,
-     -mv.xz, mv.xy,
-     mv.t,
-     -mv.z, mv.y, -mv.x,
-     mv.scalar,
-     0]
+     -mv.yzt, mv.xzt, -mv.xyt, mv.xyz,
+     -mv.zt, mv.yt, -mv.yz, mv.xt, -mv.xz, mv.xy,
+     -mv.t, mv.z, -mv.y, mv.x,
+     mv.scalar]
 
-/-- Reverse operation (reversion) -/
-def MV4.reverse {α : Type u} [Mul α] [Sub α] [Add α] [Zero α] [Neg α] (mv : MV4 α) : MV4 α :=
+/-- Reverse operation (reversion) - changes sign of bivectors and trivectors -/
+def MV4.reverse {α : Type u} [Neg α] (mv : MV4 α) : MV4 α :=
   #v[mv.scalar,
      mv.x, mv.y, mv.z, mv.t,
      -mv.xy, -mv.xz, -mv.xt, -mv.yz, -mv.yt, -mv.zt,
      -mv.xyz, -mv.xyt, -mv.xzt, -mv.yzt,
      mv.xyzt]
+
+/-- Grade involution - changes sign of odd grades -/
+def MV4.gradeInvolution {α : Type u} [Neg α] (mv : MV4 α) : MV4 α :=
+  #v[mv.scalar,
+     -mv.x, -mv.y, -mv.z, -mv.t,
+     mv.xy, mv.xz, mv.xt, mv.yz, mv.yt, mv.zt,
+     -mv.xyz, -mv.xyt, -mv.xzt, -mv.yzt,
+     mv.xyzt]
+
+/-- Clifford conjugation (grade involution + reversion) -/
+def MV4.conjugate {α : Type u} [Neg α] (mv : MV4 α) : MV4 α :=
+  mv.gradeInvolution.reverse
 
 /-- Grade projection operators -/
 def MV4.grade0 {α : Type u} [Zero α] (mv : MV4 α) : MV4 α :=
@@ -409,37 +417,105 @@ abbrev Bivector (α : Type u) := Vector α 6
 abbrev Trivector (α : Type u) := Vector α 4
 
 /-- A versor (even-graded multivector) with 8 components:
-    1 scalar + 6 bivector + 1 pseudoscalar -/
+    1 scalar + 6 bivector + 1 pseudoscalar
+    Versors represent rotations and boosts in spacetime -/
 structure Versor (α : Type u) where
-  /-- Components in order: scalar, 6 bivector components, pseudoscalar -/
-  components : Vector α 8
+  /-- Scalar component -/
+  scalar : α
+  /-- Bivector components (xy, xz, xt, yz, yt, zt) -/
+  xy : α
+  xz : α
+  xt : α
+  yz : α
+  yt : α
+  zt : α
+  /-- Pseudoscalar component -/
+  xyzt : α
   deriving Repr
 
 namespace Versor
 
+variable {α : Type u}
+
+/-- Convert versor to full multivector -/
+def toMV4 [Zero α] (v : Versor α) : MultiVector.MV4 α :=
+  #v[v.scalar, 0, 0, 0, 0, v.xy, v.xz, v.xt, v.yz, v.yt, v.zt, 0, 0, 0, 0, v.xyzt]
+
 /-- Create a versor from just a scalar value -/
 def fromScalar [Zero α] (s : α) : Versor α :=
-  let vec : Vector α 8 := ⟨Array.replicate 8 0, by simp [Array.size_replicate]⟩
-  ⟨vec.set 0 s⟩
+  ⟨s, 0, 0, 0, 0, 0, 0, 0⟩
 
-/-- Create a versor from just a bivector -/
-def fromBivector [Zero α] (b : Bivector α) : Versor α :=
-  ⟨#v[0,b[0],b[1],b[2],b[3],b[4],b[5],0]⟩
+/-- Create identity versor -/
+def identity [OfNat α 1] [Zero α] : Versor α :=
+  ⟨1, 0, 0, 0, 0, 0, 0, 0⟩
+
+/-- Create a versor from bivector components -/
+def fromBivector [Zero α] (xy xz xt yz yt zt : α) : Versor α :=
+  ⟨0, xy, xz, xt, yz, yt, zt, 0⟩
 
 /-- Create a versor representing a pure pseudoscalar -/
 def makePseudoscalar [Zero α] (p : α) : Versor α :=
-  ⟨#v[0,0,0,0,0,0,0,p]⟩
+  ⟨0, 0, 0, 0, 0, 0, 0, p⟩
 
-/-- Extract the bivector part of a versor -/
-def bivectorPart [Zero α] (v : Versor α) : Bivector α :=
-  let bv : Bivector α := ⟨Array.replicate 6 (0:α), by simp [Array.size_replicate]⟩
-  let bv := bv.set 0 v.components[1]
-  let bv := bv.set 1 v.components[2]
-  let bv := bv.set 2 v.components[3]
-  let bv := bv.set 3 v.components[4]
-  let bv := bv.set 4 v.components[5]
-  let bv := bv.set 5 v.components[6]
-  bv
+/-- Versor multiplication (composition of rotations/boosts) -/
+def mul [Mul α] [Add α] [Sub α] (v1 v2 : Versor α) : Versor α :=
+  let s := v1.scalar * v2.scalar
+         + v1.xy * v2.xy + v1.xz * v2.xz - v1.xt * v2.xt
+         + v1.yz * v2.yz - v1.yt * v2.yt - v1.zt * v2.zt
+         + v1.xyzt * v2.xyzt
+
+  let xy := v1.scalar * v2.xy + v1.xy * v2.scalar
+          + v1.xz * v2.yz - v1.xt * v2.yt
+          + v1.yz * v2.xz - v1.yt * v2.xt
+          + v1.xyzt * v2.zt
+
+  let xz := v1.scalar * v2.xz + v1.xz * v2.scalar
+          + v1.xy * v2.yz - v1.xt * v2.zt
+          + v1.yz * v2.xy - v1.zt * v2.xt
+          + v1.xyzt * v2.yt
+
+  let xt := v1.scalar * v2.xt + v1.xt * v2.scalar
+          + v1.xy * v2.yt - v1.xz * v2.zt
+          + v1.yt * v2.xy - v1.zt * v2.xz
+          + v1.xyzt * v2.yz
+
+  let yz := v1.scalar * v2.yz + v1.yz * v2.scalar
+          + v1.xy * v2.xz - v1.yt * v2.zt
+          + v1.xz * v2.xy - v1.zt * v2.yt
+          + v1.xyzt * v2.xt
+
+  let yt := v1.scalar * v2.yt + v1.yt * v2.scalar
+          + v1.xy * v2.xt - v1.yz * v2.zt
+          + v1.xt * v2.xy - v1.zt * v2.yz
+          + v1.xyzt * v2.xz
+
+  let zt := v1.scalar * v2.zt + v1.zt * v2.scalar
+          + v1.xz * v2.xt - v1.yz * v2.yt
+          + v1.xt * v2.xz - v1.yt * v2.yz
+          + v1.xyzt * v2.xy
+
+  let xyzt := v1.scalar * v2.xyzt + v1.xyzt * v2.scalar
+            + v1.xy * v2.zt - v1.xz * v2.yt + v1.xt * v2.yz
+            + v1.xyzt * v2.scalar
+
+  ⟨s, xy, xz, xt, yz, yt, zt, xyzt⟩
+
+instance [Mul α] [Add α] [Sub α] : Mul (Versor α) where
+  mul := mul
+
+/-- Versor reversal for computing inverse -/
+def reverse [Neg α] (v : Versor α) : Versor α :=
+  ⟨v.scalar, -v.xy, -v.xz, -v.xt, -v.yz, -v.yt, -v.zt, v.xyzt⟩
+
+/-- Versor norm squared -/
+def normSquared [Mul α] [Add α] [Sub α] [Neg α] (v : Versor α) : α :=
+  (v.mul v.reverse).scalar
+
+/-- Apply versor transformation to a vector (sandwich product: v * x * ~v) -/
+def applyToVector [Mul α] [Add α] [Sub α] [Neg α] [Zero α] (v : Versor α) (vec : MultiVector.MV4 α) : MultiVector.MV4 α :=
+  let mv := v.toMV4
+  let result := mv * vec * mv.reverse
+  result.grade1
 
 end Versor
 
