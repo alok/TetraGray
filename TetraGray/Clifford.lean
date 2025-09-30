@@ -130,7 +130,11 @@ instance : Functor (MV4 ·) where
 
 
 instance [Add a] : Add (MV4 a) where
-  add _ _ := sorry
+  add a b :=
+    let result := Array.zipWith (· + ·) a.toArray b.toArray
+    ⟨result, by
+      rw [Array.size_zipWith, a.size_toArray, b.size_toArray]
+      rfl⟩
 
 
 /-- Scalar multiplication on the left -/
@@ -384,6 +388,14 @@ namespace Basis
   /-- Spatial rotation plane -/
   def xyPlane : MV4 α := MV4.wedge e₀ e₁
 end Basis
+
+/-- The scalar part of e₀ is 1 -/
+theorem e0_scalar {α : Type u} [OfNat α 1] [Zero α] : (MV4.e0 : MV4 α).scalar = 1 := by
+  rfl
+
+/-- The x component of e1 is 1 -/
+theorem e1_x {α : Type u} [OfNat α 1] [Zero α] : (MV4.e1 : MV4 α).x = 1 := by
+  rfl
 
 end MultiVector
 
