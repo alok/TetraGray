@@ -1,0 +1,251 @@
+═══════════════════════════════════════════════════════════════
+  CONTEXT WINDOW HANDOFF - TetraGray Lean 4 Port
+═══════════════════════════════════════════════════════════════
+
+Session Date: 2025-09-29
+Duration: Full context window (~100k tokens used)
+Status: READY TO CONTINUE
+
+───────────────────────────────────────────────────────────────
+  WHAT WAS ACCOMPLISHED
+───────────────────────────────────────────────────────────────
+
+✅ Fixed all build errors (zero warnings)
+✅ Enhanced Clifford algebra (~530 lines)
+   - Grade involution, conjugation, dual
+   - Full grade projections (0-4)
+✅ Restructured Versor with named fields
+   - Multiplication, reversal, norm squared
+   - Sandwich product for transformations
+✅ Created CoordSystems module (~120 lines)
+   - Spherical & spheroidal coordinates
+   - All basis vectors
+   - Doran gauge transformations
+✅ Development infrastructure
+   - dev-loop.sh (build → run → view)
+   - watch-dev.sh (continuous rebuild)
+✅ Comprehensive documentation
+   - CPP_PARITY.md (feature comparison)
+   - NEXT_STEPS.md (detailed roadmap)
+   - SESSION_SUMMARY.md (what we did)
+   - README_CONTINUATION.md (quick start)
+
+Commits: 7 total
+Code: ~1,100 lines Lean
+Docs: ~2,000 lines markdown
+Build: ✅ Success (all 25 targets)
+
+───────────────────────────────────────────────────────────────
+  CURRENT STATE
+───────────────────────────────────────────────────────────────
+
+Parity: ~55% complete (90% of math, 0% of tests)
+
+Working:
+  ✓ Clifford algebra (Cl(3,1))
+  ✓ Geometric product
+  ✓ Versors (rotations/boosts)
+  ✓ Coordinate transformations
+  ✓ RK4 integration
+  ✓ Particle physics
+  ✓ Basic raytracing
+  ✓ PPM output
+
+Missing:
+  ✗ Test suite (critical!)
+  ✗ Dynamic stepsize
+  ✗ Stop conditions
+  ✗ Spherical colormap
+  ✗ Full raytracer pipeline
+  ✗ PNG output
+
+───────────────────────────────────────────────────────────────
+  IMMEDIATE NEXT STEPS (IN ORDER)
+───────────────────────────────────────────────────────────────
+
+1. CREATE TEST SUITE (30 min, HIGH PRIORITY)
+
+   touch TetraGray/Tests.lean
+
+   Port tests from tetra-gray/test.cu:
+   - rk4_test() → expect 0.263753
+   - choose_test() → expect 6
+   - multivector_zero_test()
+   - multivector_multiply_test()
+   - Add to lakefile.lean as executable
+
+   Goal: Validate math is correct
+
+2. IMPLEMENT DYNAMIC STEPSIZE (30 min)
+
+   touch TetraGray/Stepsize.lean
+
+   Features needed:
+   - DynamicStepsizeAdjuster structure
+   - adjustStepsize function
+   - stepsizeRatioStopCondition
+
+   See NEXT_STEPS.md section 2 for code template
+
+3. IMPLEMENT STOP CONDITIONS (20 min)
+
+   touch TetraGray/StopConditions.lean
+
+   Functions:
+   - distanceStopCondition
+   - timeStopCondition
+   - combinedStopCondition
+   - horizonStopCondition
+
+   See NEXT_STEPS.md section 3 for code
+
+4. UPDATE DORAN MODULE (2 hours)
+
+   Modify TetraGray/Doran.lean
+   Use new CoordSystems module
+   Wire up Doran RHS with gauge transformations
+
+   See NEXT_STEPS.md section 4
+
+5. SPHERICAL COLORMAP (1-2 hours)
+
+   touch TetraGray/Colormap.lean
+   4 colored regions + white gridlines
+   See NEXT_STEPS.md section 5
+
+───────────────────────────────────────────────────────────────
+  KEY FILES TO READ
+───────────────────────────────────────────────────────────────
+
+Start Here:
+  ▶ README_CONTINUATION.md  - Quick start guide
+  ▶ NEXT_STEPS.md           - Detailed roadmap with code
+
+Reference:
+  • CPP_PARITY.md           - Feature comparison table
+  • SESSION_SUMMARY.md      - What we just did
+  • DEVELOPMENT.md          - General workflow
+  • tetra-gray/test.cu      - C++ test reference
+
+───────────────────────────────────────────────────────────────
+  QUICK COMMANDS
+───────────────────────────────────────────────────────────────
+
+# Verify build
+lake build
+
+# Run simple raytracer
+./dev-loop.sh
+
+# Watch mode (continuous rebuild)
+./watch-dev.sh
+
+# Create test file
+touch TetraGray/Tests.lean
+
+# Build and run tests (after creating)
+lake build Tests
+.lake/build/bin/Tests
+
+# Compare with C++ output
+cd tetra-gray && ./test > ../cpp_output.txt
+cd .. && .lake/build/bin/Tests > lean_output.txt
+diff cpp_output.txt lean_output.txt
+
+───────────────────────────────────────────────────────────────
+  IMPORTANT NOTES
+───────────────────────────────────────────────────────────────
+
+• All code compiles ✓
+• Math is solid (90% done) ✓
+• Need validation via tests ⚠
+• Then integration & pipeline
+• C++ has 40+ tests in test.cu
+• Port incrementally, verify each
+• Expected: <1% floating point error
+
+Known Limitations:
+- No Float.max (use if-then-else)
+- No Float.copysign (use if >= 0)
+- Sequential execution (no GPU yet)
+- PPM only (PNG needs converter)
+
+───────────────────────────────────────────────────────────────
+  SUCCESS CRITERIA
+───────────────────────────────────────────────────────────────
+
+Before claiming parity:
+  □ Test suite passes (<1% error)
+  □ Flat space image matches reference
+  □ Black hole image qualitatively correct
+  □ All modules build cleanly
+  □ Documentation complete
+
+Estimated time to completion: 10-12 hours
+
+───────────────────────────────────────────────────────────────
+  GIT STATE
+───────────────────────────────────────────────────────────────
+
+Branch: main
+Clean: yes
+Commits this session: 7
+Last: f32d998 "Add quick start guide"
+Ready: ✅
+
+───────────────────────────────────────────────────────────────
+  CONTEXT FOR NEXT AGENT
+───────────────────────────────────────────────────────────────
+
+You are continuing the port of TetraGray (CUDA raytracer for
+spinning black holes) from C++ to Lean 4.
+
+Previous agent built the mathematical foundation:
+- Clifford algebra (geometric algebra)
+- Versors (rotations in spacetime)
+- Coordinate systems (spherical, spheroidal)
+- Integration infrastructure
+
+Your job: Integration and validation
+- Port test suite from tetra-gray/test.cu
+- Implement missing features (stepsize, stops, colormap)
+- Wire everything together
+- Achieve feature parity
+
+Start with tests to validate correctness.
+Then add missing features one by one.
+
+───────────────────────────────────────────────────────────────
+  FILE STRUCTURE
+───────────────────────────────────────────────────────────────
+
+TetraGray/
+├── Clifford.lean           ✅ 530 lines (complete)
+├── CoordSystems.lean       ✅ 120 lines (new)
+├── Particle.lean           ✅  50 lines
+├── ODE.lean                ✅  80 lines
+├── Image.lean              ✅ 105 lines
+├── SimpleRaytracer.lean    ✅ 168 lines
+├── Doran.lean              ⚠️  Needs update
+├── Tests.lean              ❌ TODO (priority 1)
+├── Stepsize.lean           ❌ TODO (priority 2)
+├── StopConditions.lean     ❌ TODO (priority 3)
+├── Colormap.lean           ❌ TODO (priority 5)
+└── Raytracer.lean          ⚠️  Needs update
+
+Documentation:
+├── README_CONTINUATION.md  ← START HERE
+├── NEXT_STEPS.md
+├── SESSION_SUMMARY.md
+├── CPP_PARITY.md
+└── DEVELOPMENT.md
+
+Scripts:
+├── dev-loop.sh             ✅ Works
+└── watch-dev.sh            ✅ Works
+
+───────────────────────────────────────────────────────────────
+
+Ready to continue. Start with: cat README_CONTINUATION.md
+
+═══════════════════════════════════════════════════════════════
